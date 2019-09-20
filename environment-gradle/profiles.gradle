@@ -1,0 +1,35 @@
+dependencies {
+    if (project.hasProperty('environment') && environment == 'prod') {
+
+    } else if (project.hasProperty('environment') && environment == 'dev') {
+
+    } else if (project.hasProperty('environment') && environment == 'int') {
+
+    } else {
+
+    }
+}
+
+def prodProfiles = 'prod'
+def devProfiles = 'dev'
+def testProfiles = 'test'
+def intProfiles = 'int'
+def propertyDrivenProfiles;
+
+if (project.hasProperty('environment') && environment == 'prod') {
+    propertyDrivenProfiles = prodProfiles
+} else if (project.hasProperty('environment') && environment == 'dev') {
+    propertyDrivenProfiles = devProfiles
+} else if (project.hasProperty('environment') && environment == 'int') {
+    propertyDrivenProfiles = intProfiles
+} else {
+    propertyDrivenProfiles = testProfiles
+}
+
+bootRun {
+    systemProperties = [
+            'spring.profiles.active': propertyDrivenProfiles
+    ]
+}
+
+println 'Including subproject ENVIRONEMENT-PROFILES: ' + environment + "; active profile: " + propertyDrivenProfiles
