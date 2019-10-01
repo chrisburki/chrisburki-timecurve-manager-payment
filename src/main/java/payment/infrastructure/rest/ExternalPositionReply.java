@@ -15,29 +15,18 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExternalPosition implements Serializable {
+public class ExternalPositionReply implements Serializable {
 
+  @NotNull
   private Long id;
 
   @NotNull
-  private String tenantId;
-
-  @NotNull
-  private String containerId;
-
-  // @NotNull
   private String tag;
 
-  // @NotNull
+  @NotNull
   private String name;
 
   @NotNull
-  private PositionValueType valueType;
-
-  @NotNull
-  private String valueTag;
-
-  // @NotNull
-  private Boolean doBalanceCheck;
+  private Boolean needBalanceCheck;
 
 }

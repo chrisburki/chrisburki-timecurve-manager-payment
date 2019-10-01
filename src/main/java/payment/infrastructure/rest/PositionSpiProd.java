@@ -1,6 +1,7 @@
 package payment.infrastructure.rest;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
@@ -10,31 +11,35 @@ import payment.domain.model.PositionDetail;
 
 @Component
 @Slf4j
-@Profile("int")
-public class PaymentSpiIntImpl implements PaymentSpi {
+@Profile("prod")
+public class PositionSpiProd implements PaymentSpi {
 
-  private String ewomPositionUrl = "http://timecurve-manager:8080/positions/";
+  @Value("${EWOM_POSITION_SERVICE_HOST}")
+  private String ewomPositionHost;
+
+  @Value("${{EWOM_POSITION_SERVICE_PORT}")
+  private String ewomPositionPort;
+
+  String ewomPositionUrl = "http://" + ewomPositionHost + ":" + ewomPositionPort + "/positions/";
 
   @Override
   public PositionDetail addPosition(String tenantId, String containerId, String currencyIso) {
     log.debug("Add position with URL: " + ewomPositionUrl);
     RestTemplate restTemplate = new RestTemplate();
 
-    ExternalPosition position = ExternalPosition.builder()
+    ExternalPositionCommand position = ExternalPositionCommand.builder()
         .tenantId(tenantId)
         .containerId(containerId)
-        .tag(tenantId + "#" + containerId + "#" + PositionValueType.CURRENCY+ "#" + currencyIso + "#INT")
         .valueType(PositionValueType.CURRENCY)
         .valueTag(currencyIso)
-        .doBalanceCheck(true)
         .build();
-    HttpEntity<ExternalPosition> request = new HttpEntity<>(position);
-    ExternalPosition response = restTemplate
-        .postForObject(ewomPositionUrl, request, ExternalPosition.class);
+    HttpEntity<ExternalPositionCommand> request = new HttpEntity<>(position);
+    ExternalPositionReply response = restTemplate
+        .postForObject(ewomPositionUrl, request, ExternalPositionReply.class);
     PositionDetail positionDetail = PositionDetail.builder()
         .positionId(response.getId().toString())
-        .tenantId(response.getTenantId())
-        .needBalanceCheck(response.getDoBalanceCheck())
+        .tenantId(tenantId)
+        .needBalanceCheck(response.getNeedBalanceCheck())
         .build();
     return positionDetail;
   }

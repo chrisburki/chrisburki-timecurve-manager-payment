@@ -17,6 +17,12 @@ public class PositionDetail {
   private String tenantId;
 
   @NotNull
+  private String tag;
+
+  @NotNull
+  private String name;
+
+  @NotNull
   private Boolean needBalanceCheck;
 
 }

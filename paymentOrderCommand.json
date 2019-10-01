@@ -1,0 +1,11 @@
+{
+  "tenantId": "AAA",
+  "orderStatus": "OPEN",
+  "orderType": "domestic",
+  "transactionDate": "2019-07-09",
+  "valueDate": "2019-07-09",
+  "payer_iban": "CH1231231231108",
+  "beneficiary_iban": "CH1231231231123",
+  "amount": "2000.00",
+  "currency_iso": "CHF"
+}

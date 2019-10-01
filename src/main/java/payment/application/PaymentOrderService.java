@@ -2,11 +2,17 @@ package payment.application;
 
 import static payment.domain.model.PaymentOrderNotFoundException.paymentNotFound;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import payment.domain.PaymentOrderMessageOutHdl;
 import payment.domain.PaymentSpi;
+import payment.domain.api.PaymentBookingCommand;
+import payment.domain.api.PaymentBookingDimension;
+import payment.domain.api.PaymentBookingItemType;
+import payment.domain.api.PaymentBookingStatus;
 import payment.domain.api.PaymentOrderCommand;
 import payment.domain.api.PaymentOrderExternalEvent;
 import payment.domain.model.PositionDetail;
@@ -19,11 +25,14 @@ public class PaymentOrderService {
 
   private final PaymentOrderEntityRepository repository;
   private final PaymentSpi paymentSpi;
+  private final PaymentOrderMessageOutHdl messageOutHdl;
 
   public PaymentOrderService(
-      PaymentOrderEntityRepository repository, PaymentSpi paymentSpi) {
+      PaymentOrderEntityRepository repository, PaymentSpi paymentSpi,
+      PaymentOrderMessageOutHdl messageOutHdl) {
     this.repository = repository;
     this.paymentSpi = paymentSpi;
+    this.messageOutHdl = messageOutHdl;
   }
 
   //
@@ -60,16 +69,40 @@ public class PaymentOrderService {
     return repository.save(order);
   }
 
+  private void sendPaymentBookingCommand(PaymentOrderEntity order) {
+    Integer payerRowNr = 1;
+    Integer auxRowNr = 2;
+    PaymentBookingCommand paymentBookingCommand = PaymentBookingCommand.builder()
+        .extId(null)
+        .sequenceNr(null)
+        .orderId(order.getId())
+        .tenantId(order.getTenantId())
+        .dimension(PaymentBookingDimension.SUBLEDGER)
+        .status(order.getOrderStatus().bookingStatus())
+        .useCase("Domestic Payment")
+        .date1(LocalDate.now())
+        .date2(order.getValueDate())
+        .gsn(order.getGsn())
+        .build();
+    paymentBookingCommand
+        .createBookingItem(payerRowNr, order.getPayer_pos_id(), PaymentBookingItemType.BASIC, 1L,
+            order.getAmount().negate(), null, null, order.getAmount().negate(), null, null);
+    paymentBookingCommand
+        .createBookingItem(auxRowNr, order.getAuxiliary_pos_id(), PaymentBookingItemType.BASIC, 1L,
+            order.getAmount(), null, null, order.getAmount(), null, null);
+    messageOutHdl.sendBookingCommand(paymentBookingCommand);
+
+  }
+
   /*
    * Process Command
    * ***************
    * */
-  public PaymentOrderExternalEvent processPaymentCommand(PaymentOrderCommand paymentOrderCommand,
-      Boolean sendReply) {
+  public PaymentOrderExternalEvent processPaymentCommand(PaymentOrderCommand paymentOrderCommand) {
     //@todo: check for duplicates
 
     // auxiliary position (may replicate from other SCS)
-    String auxiliaryContainerId = "AUX_CONT_PAY_1";
+    final String auxiliaryContainerId = "AUX_CONT_PAY_1";
 
     PaymentOrderEntity payment;
 
@@ -79,14 +112,16 @@ public class PaymentOrderService {
       payment = getOrderById(paymentOrderCommand.getId());
       payment.setOrderStatus(payment.getOrderStatus());
       payment.setAmount(nvl(paymentOrderCommand.getAmount(), payment.getAmount()));
-      payment.setCurrency_iso(nvl(paymentOrderCommand.getCurrency_iso(), payment.getCurrency_iso()));
+      payment
+          .setCurrency_iso(nvl(paymentOrderCommand.getCurrency_iso(), payment.getCurrency_iso()));
 
     } else {
       // create new payment
 
       // get or create auxiliary position
       PositionDetail auxiliaryPosition = paymentSpi
-          .addPosition(paymentOrderCommand.getTenantId(), auxiliaryContainerId, paymentOrderCommand.getCurrency_iso());
+          .addPosition(paymentOrderCommand.getTenantId(), auxiliaryContainerId,
+              paymentOrderCommand.getCurrency_iso());
       // get money account position
       PositionDetail payerPosition = paymentSpi
           .getMoneyAccount(paymentOrderCommand.getTenantId(), paymentOrderCommand.getPayer_iban());
@@ -105,22 +140,19 @@ public class PaymentOrderService {
           auxiliaryPosition.getPositionId(),
           paymentOrderCommand.getAmount(),
           paymentOrderCommand.getCurrency_iso()
-          );
+      );
     }
 
     // store order
     PaymentOrderEntity paymentResult = addOrder(payment);
 
     // send messages: booking
+    sendPaymentBookingCommand(paymentResult);
 
-    if (sendReply) {
-      return PaymentOrderExternalEvent.builder()
-          .id(paymentResult.getId())
-          .orderStatus(paymentResult.getOrderStatus())
-          .gsn(paymentResult.getGsn())
-          .build();
-    } else {
-      return null;
-    }
+    return PaymentOrderExternalEvent.builder()
+        .id(paymentResult.getId())
+        .orderStatus(paymentResult.getOrderStatus())
+        .gsn(paymentResult.getGsn())
+        .build();
   }
 }

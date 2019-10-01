@@ -1,10 +1,10 @@
 package payment.infrastructure.persistence;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import javax.annotation.PostConstruct;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,13 +34,13 @@ public class PaymentOrderEntity {
   private String beneficiary_iban;
   private String beneficiary_address;
   private String auxiliary_pos_id;
-  private Double amount;
+  private BigDecimal amount;
   private String currency_iso;
 
   public PaymentOrderEntity(String tenantId, OrderStatus orderStatus,
       String orderType, LocalDate transactionDate, LocalDate valueDate, String payer_iban,
       String payer_pos_id, String beneficiary_iban, String beneficiary_address,
-      String auxiliary_pos_id, Double amount, String currency_iso) {
+      String auxiliary_pos_id, BigDecimal amount, String currency_iso) {
     this.tenantId = tenantId;
     this.orderStatus = orderStatus;
     this.orderType = orderType;

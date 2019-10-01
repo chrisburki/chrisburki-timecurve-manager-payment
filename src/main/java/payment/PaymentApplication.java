@@ -1,5 +1,6 @@
 package payment;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -35,11 +36,11 @@ public class PaymentApplication {
           .payer_iban("CH1231231231108")
           .beneficiary_iban("CH1231231231123")
           .beneficiary_address("Michelle Burki")
-          .amount(1000d)
+          .amount(new BigDecimal(1000))
           .currency_iso("CHF")
           .build();
       PaymentOrderExternalEvent paymentResult1 = paymentOrderService
-          .processPaymentCommand(command1, true);
+          .processPaymentCommand(command1);
       log.info("payment1: " + paymentResult1.getId());
 
       //Payment 2
@@ -52,11 +53,11 @@ public class PaymentApplication {
           .payer_iban("CH1231231231108")
           .beneficiary_iban("CH1231231231129")
           .beneficiary_address("Aniél Burki")
-          .amount(2000d)
+          .amount(new BigDecimal(2000))
           .currency_iso("CHF")
           .build();
       PaymentOrderExternalEvent paymentResult2 = paymentOrderService
-          .processPaymentCommand(command2, true);
+          .processPaymentCommand(command2);
       log.info("payment2: " + paymentResult2.getId());
 
     };

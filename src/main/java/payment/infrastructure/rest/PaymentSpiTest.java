@@ -9,7 +9,7 @@ import payment.domain.model.PositionDetail;
 @Component
 @Slf4j
 @Profile("test")
-public class PaymentSpiTestImpl implements PaymentSpi {
+public class PaymentSpiTest implements PaymentSpi {
 
   @Override
   public PositionDetail addPosition(String tenantId, String containerId, String currencyIso) {

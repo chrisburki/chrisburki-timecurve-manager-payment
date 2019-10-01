@@ -39,6 +39,6 @@ public class PaymentOrderController {
   @PostMapping("/orders")
   ResponseEntity<PaymentOrderExternalEvent> createOrder(
       @RequestBody PaymentOrderCommand paymentOrderCommand) {
-    return new ResponseEntity<>(orderService.processPaymentCommand(paymentOrderCommand, true), HttpStatus.OK);
+    return new ResponseEntity<>(orderService.processPaymentCommand(paymentOrderCommand), HttpStatus.OK);
   }
 }
