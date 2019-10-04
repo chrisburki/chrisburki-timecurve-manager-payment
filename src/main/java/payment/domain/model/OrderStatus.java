@@ -3,12 +3,14 @@ package payment.domain.model;
 import payment.domain.api.PaymentBookingStatus;
 
 public enum OrderStatus {
-  OPEN_PEND("open_pend", "o_p", "Open Pending", PaymentBookingStatus.OPEN),
-  OPEN("open", "o", "Open", PaymentBookingStatus.OPEN),
-  APPROVED_PEND("approved_pend", "a_p", "Approved Pending", PaymentBookingStatus.APPROVED),
-  APPROVED("approved", "a", "Approved", PaymentBookingStatus.APPROVED),
-  DONE_PEND("done_pend", "d_p", "Done Pending", PaymentBookingStatus.BOOKED),
-  DONE("done", "d", "Done", PaymentBookingStatus.BOOKED);
+  OPEN("open", "o", "Open", PaymentBookingStatus.OPEN, null, false),
+  OPEN_PEND("open_pend", "o_p", "Open Pending", PaymentBookingStatus.OPEN, OrderStatus.OPEN, true),
+  APPROVED("approved", "a", "Approved", PaymentBookingStatus.APPROVED, null, false),
+  APPROVED_PEND("approved_pend", "a_p", "Approved Pending", PaymentBookingStatus.APPROVED,
+      OrderStatus.APPROVED, true),
+  DONE("done", "d", "Done", PaymentBookingStatus.BOOKED, null, false),
+  DONE_PEND("done_pend", "d_p", "Done Pending", PaymentBookingStatus.BOOKED, OrderStatus.DONE,
+      true);
 
   private final Object[] values;
 
@@ -30,5 +32,13 @@ public enum OrderStatus {
 
   public PaymentBookingStatus bookingStatus() {
     return (PaymentBookingStatus) values[3];
+  }
+
+  public OrderStatus processedStatus() {
+    return (OrderStatus) values[4];
+  }
+
+  public Boolean statusIsPend() {
+    return (Boolean) values[5];
   }
 }

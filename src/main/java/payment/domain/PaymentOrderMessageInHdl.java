@@ -2,7 +2,6 @@ package payment.domain;
 
 import org.springframework.messaging.MessageHeaders;
 import payment.domain.api.PaymentBookingReplyEvent;
-import payment.domain.api.PaymentOrderCommand;
 
 public interface PaymentOrderMessageInHdl {
 

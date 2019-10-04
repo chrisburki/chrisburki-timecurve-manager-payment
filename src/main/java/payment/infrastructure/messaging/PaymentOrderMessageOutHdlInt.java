@@ -29,16 +29,16 @@ public class PaymentOrderMessageOutHdlInt implements PaymentOrderMessageOutHdl {
     this.kafkaTemplate = kafkaTemplate;
   }
 
-  //see: https://callistaenterprise.se/blogg/teknik/2018/10/26/synchronous-request-reply-over-kafka/
+  //see: https://github.com/spring-projects/spring-kafka/blob/master/src/reference/asciidoc/kafka.adoc
 
   @Override
   public void sendBookingCommand(PaymentBookingCommand event) {
     log.debug("Send Booking Command" + event.toString());
-//    Object replyChannel = get(replyBookingTopic);
     Message<PaymentBookingCommand> message = MessageBuilder
         .withPayload(event)
         .setHeader(KafkaHeaders.TOPIC, bookingCommandTopic)
-//        .setReplyChannel(replyBookingTopic)
+        .setHeader(KafkaHeaders.REPLY_TOPIC, replyBookingTopic)
+        .setHeader(KafkaHeaders.CORRELATION_ID, event.getOrderId())
         .build();
     kafkaTemplate.send(message);
   }

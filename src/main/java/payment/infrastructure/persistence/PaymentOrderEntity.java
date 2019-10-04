@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
+import java.util.UUID;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,9 +56,11 @@ public class PaymentOrderEntity {
     this.currency_iso = currency_iso;
   }
 
-  @PostConstruct
   public void onPrePersist() {
-    gsn = currGsn();
+    if (this.getId() == null) {
+      this.setId(UUID.randomUUID().toString());
+    }
+    this.gsn = currGsn();
   }
 
   private Long currGsn() {

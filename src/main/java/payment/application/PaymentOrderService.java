@@ -12,7 +12,7 @@ import payment.domain.PaymentSpi;
 import payment.domain.api.PaymentBookingCommand;
 import payment.domain.api.PaymentBookingDimension;
 import payment.domain.api.PaymentBookingItemType;
-import payment.domain.api.PaymentBookingStatus;
+import payment.domain.api.PaymentBookingReplyEvent;
 import payment.domain.api.PaymentOrderCommand;
 import payment.domain.api.PaymentOrderExternalEvent;
 import payment.domain.model.PositionDetail;
@@ -62,11 +62,11 @@ public class PaymentOrderService {
   // Command
   //
   private PaymentOrderEntity addOrder(PaymentOrderEntity order) {
-
-    if (order.getId() == null) {
-      order.setId(UUID.randomUUID().toString());
-    }
+    order.onPrePersist();
     return repository.save(order);
+
+    //@todo: publish domain event & external event (anti corruption layer, domain event only within bounded context)
+
   }
 
   private void sendPaymentBookingCommand(PaymentOrderEntity order) {
@@ -91,6 +91,10 @@ public class PaymentOrderService {
         .createBookingItem(auxRowNr, order.getAuxiliary_pos_id(), PaymentBookingItemType.BASIC, 1L,
             order.getAmount(), null, null, order.getAmount(), null, null);
     messageOutHdl.sendBookingCommand(paymentBookingCommand);
+
+  }
+
+  private void proceedWorkflow(PaymentOrderEntity oldPayment, PaymentOrderCommand paymentCommand) {
 
   }
 
@@ -149,6 +153,29 @@ public class PaymentOrderService {
     // send messages: booking
     sendPaymentBookingCommand(paymentResult);
 
+    return PaymentOrderExternalEvent.builder()
+        .id(paymentResult.getId())
+        .orderStatus(paymentResult.getOrderStatus())
+        .gsn(paymentResult.getGsn())
+        .build();
+  }
+
+  /*
+   * Process Booking Reply
+   * *********************
+   * */
+  public PaymentOrderExternalEvent procecssBookingReply(PaymentBookingReplyEvent replyEvent) {
+    PaymentOrderEntity payment;
+    PaymentOrderEntity paymentResult;
+    payment = getOrderById(replyEvent.getOrderId());
+    if (payment.getOrderStatus().statusIsPend()) {
+      payment.setOrderStatus(payment.getOrderStatus().processedStatus());
+
+      // store order
+      paymentResult = addOrder(payment);
+    } else {
+      paymentResult = payment;
+    }
     return PaymentOrderExternalEvent.builder()
         .id(paymentResult.getId())
         .orderStatus(paymentResult.getOrderStatus())

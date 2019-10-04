@@ -24,4 +24,6 @@ public class PaymentBookingReplyEvent {
   @NotNull
   private String tenantId;
 
+  @NotNull
+  private PaymentBookingStatus bookingStatus;
 }

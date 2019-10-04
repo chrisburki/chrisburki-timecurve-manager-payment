@@ -50,7 +50,8 @@ public class PaymentBookingIntConfig {
   // Consumer for Booking Command
   @Bean
   public ConsumerFactory<String, PaymentBookingReplyEvent> paymentBookingReplyMessageConsumerFactory() {
-    JsonDeserializer<PaymentBookingReplyEvent> deserializer = new JsonDeserializer<>(PaymentBookingReplyEvent.class);
+    JsonDeserializer<PaymentBookingReplyEvent> deserializer = new JsonDeserializer<>(
+        PaymentBookingReplyEvent.class);
     deserializer.setRemoveTypeHeaders(false);
     deserializer.addTrustedPackages("*");
     deserializer.setUseTypeMapperForKey(true);
