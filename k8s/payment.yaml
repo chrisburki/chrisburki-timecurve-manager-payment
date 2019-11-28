@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+      role: backend
+      scs: payment
+  template:
+    metadata:
+      labels:
+        app: order
+        role: backend
+        scs: payment
+    spec:
+      containers:
+        - name: payment
+          image: eu.gcr.io/buc-personal-banking/payment:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /actuator/health
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /payments/orders
+              port: 8080
+          ports:
+            - protocol: TCP
+              containerPort: 8080
+          volumeMounts:
+            - name: timecurve-pubsub-secrets
+              mountPath: /var/secrets/google
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/pubsub-credentials.json
+      # [START volumes]
+      volumes:
+        - name: timecurve-pubsub-secrets
+          secret:
+            secretName: timecurve-pubsub-credentials
+      # [END volumes]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+spec:
+  selector:
+    app: order
+    role: backend
+    scs: payment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort

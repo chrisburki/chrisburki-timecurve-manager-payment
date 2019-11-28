@@ -1,0 +1,13 @@
+{
+  "tenantId": "AAA",
+  "orderStatus": "OPEN",
+  "orderType": "domestic",
+  "transactionDate": "2019-07-03",
+  "valueDate": "2019-07-03",
+  "payer_iban": "CH1231231231123",
+  "beneficiary_iban": "CH1231231231129",
+  "beneficiary_address": "Christoph Burki",
+  "amount": 2500.0,
+  "currency_iso": "CHF",
+  "id": null
+}

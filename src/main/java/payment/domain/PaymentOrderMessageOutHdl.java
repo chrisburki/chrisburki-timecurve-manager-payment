@@ -1,5 +1,6 @@
 package payment.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import payment.domain.api.PaymentBookingCommand;
 import payment.domain.api.PaymentOrderExternalEvent;
 

@@ -10,7 +10,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import payment.application.PaymentOrderService;
 import payment.domain.PaymentOrderMessageInHdl;
-import payment.domain.PaymentOrderMessageOutHdl;
 import payment.domain.api.PaymentBookingReplyEvent;
 import payment.domain.api.PaymentOrderExternalEvent;
 
